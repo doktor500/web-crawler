@@ -10,7 +10,7 @@ class CrawlerSystem(crawler: Crawler) extends Actor {
 
   import context.dispatcher
 
-  def receive = active(SiteGraph())
+  def receive: Receive = active(SiteGraph())
 
   def active(siteGraph: SiteGraph): Receive = {
     case Init(domain)              => init(domain)
@@ -25,15 +25,15 @@ class CrawlerSystem(crawler: Crawler) extends Actor {
   }
 
   private def triggerCrawlRequest(url: String, siteGraph: SiteGraph): Unit = {
-    context.become(active(siteGraph.add(url, List())))
-    crawler.crawl(url)
+    context.become(active(siteGraph.add(url, Set())))
+    crawler.crawl(siteGraph.rootDomain, url)
       .map(urls => CrawlResponse(url, urls))
       .pipeTo(self)(sender())
   }
 
-  private def processCrawlResponse(url: String, links: List[String], siteGraph: SiteGraph): Unit = {
-    val newGraph = siteGraph.add(url, links)
+  private def processCrawlResponse(url: String, links: Set[String], siteGraph: SiteGraph): Unit = {
     val newLinks = links.filter(link => link.startsWith(siteGraph.rootDomain) && !siteGraph.contains(link))
+    val newGraph = siteGraph.add(url, newLinks)
     context.become(active(newGraph))
     newLinks.foreach(link => triggerCrawlRequest(link, newGraph))
   }
@@ -43,6 +43,5 @@ object CrawlerSystem {
   case object GetState
   case class Init(domain: String)
   case class CrawlRequest(url: String)
-  case class CrawlResponse(url: String, links: List[String])
+  case class CrawlResponse(url: String, links: Set[String])
 }
-

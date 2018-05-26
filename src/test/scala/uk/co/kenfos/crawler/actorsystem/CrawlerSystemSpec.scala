@@ -7,9 +7,10 @@ import akka.util.Timeout
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 import uk.co.kenfos.crawler.actorsystem.CrawlerSystem.{GetState, Init}
-import uk.co.kenfos.crawler.domain.{SiteGraph, Node}
-import uk.co.kenfos.crawler.service.DefaultCrawler
+import uk.co.kenfos.crawler.domain.{Node, SiteGraph}
+import uk.co.kenfos.crawler.service.Crawler
 
+import scala.concurrent.Future
 import scala.concurrent.duration._
 
 class CrawlerSystemSpec extends TestKit(ActorSystem("CrawlerSystem"))
@@ -18,27 +19,32 @@ class CrawlerSystemSpec extends TestKit(ActorSystem("CrawlerSystem"))
   with ScalaFutures
   with BeforeAndAfterAll {
 
-  implicit val timeout = Timeout(1.seconds)
+  implicit val timeout: Timeout = Timeout(1.seconds)
 
   override def afterAll() = {
     system.terminate
-    super.afterAll()
   }
 
   "CrawlerSystem" should {
     "crawls a domain" in {
-      val domainUrl = "www.kenfos.co.uk"
-      val aboutUrl = "www.kenfos.co.uk/contact"
-      val siteMap = Map(domainUrl -> List(aboutUrl), aboutUrl -> List())
-      val crawlerSystem = TestActorRef.apply(new CrawlerSystem(new DefaultCrawler(siteMap)))
+      val domainUrl = "http://www.kenfos.co.uk"
+      val aboutUrl = "http://www.kenfos.co.uk/contact"
+      val siteMap = Map(domainUrl -> Set(aboutUrl), aboutUrl -> Set[String]())
+      val crawlerSystem = TestActorRef.apply(new CrawlerSystem(new FakeCrawler(siteMap)))
 
       crawlerSystem ! Init(domainUrl)
 
       val actorState = (crawlerSystem ? GetState).futureValue
       actorState.leftSideValue shouldBe SiteGraph(
         domainUrl,
-        Map(Node(domainUrl) -> List(Node(aboutUrl)), Node(aboutUrl) -> List())
+        Map(Node(domainUrl) -> Set(Node(aboutUrl)), Node(aboutUrl) -> Set())
       )
     }
   }
 }
+
+class FakeCrawler(siteMap: Map[String, Set[String]]) extends Crawler {
+  import scala.concurrent.ExecutionContext.Implicits.global
+  override def crawl(domain: String, url: String): Future[Set[String]] = Future { siteMap.getOrElse(url, Set()) }
+}
+
