@@ -1,14 +1,18 @@
 package uk.co.kenfos.crawler.actorsystem
 
-import akka.actor.Actor
+import akka.actor.{Actor, ReceiveTimeout}
 import akka.pattern.pipe
 import uk.co.kenfos.crawler.actorsystem.CrawlerSystem.{CrawlRequest, CrawlResponse, GetState, Init}
 import uk.co.kenfos.crawler.domain.SiteGraph
 import uk.co.kenfos.crawler.service.Crawler
 
+import scala.concurrent.duration._
+
 class CrawlerSystem(crawler: Crawler) extends Actor {
 
   import context.dispatcher
+
+  context.setReceiveTimeout(1 seconds)
 
   def receive: Receive = active(SiteGraph())
 
@@ -17,6 +21,7 @@ class CrawlerSystem(crawler: Crawler) extends Actor {
     case CrawlRequest(url)         => triggerCrawlRequest(url, siteGraph)
     case CrawlResponse(url, links) => processCrawlResponse(url, links, siteGraph)
     case GetState                  => sender() ! siteGraph
+    case ReceiveTimeout            => context.system.terminate()
   }
 
   private def init(domain: String): Unit = {
