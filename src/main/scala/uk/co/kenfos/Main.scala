@@ -7,7 +7,7 @@ import uk.co.kenfos.crawler.service.{DefaultUrlBuilder, HTMLScraper, HTTPCrawler
 
 object Main extends App {
 
-  val domainUrl = "http://www.kenfos.co.uk"
+  val domainUrl = args(0)
   val system = ActorSystem("CrawlerSystem")
   val crawler = system.actorOf(Props(new CrawlerSystem(new HTTPCrawler(HTMLScraper, DefaultUrlBuilder))))
 
