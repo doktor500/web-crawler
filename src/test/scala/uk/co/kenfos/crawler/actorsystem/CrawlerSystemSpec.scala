@@ -46,5 +46,6 @@ class CrawlerSystemSpec extends TestKit(ActorSystem("CrawlerSystem"))
 class FakeCrawler(siteMap: Map[String, Set[String]]) extends Crawler {
   import scala.concurrent.ExecutionContext.Implicits.global
   override def crawl(domain: String, url: String): Future[Set[String]] = Future { siteMap.getOrElse(url, Set()) }
+  override def terminate: Unit = println("terminate")
 }
 

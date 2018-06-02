@@ -2,13 +2,14 @@ package uk.co.kenfos.crawler.actorsystem
 
 import akka.actor.{Actor, ReceiveTimeout}
 import akka.pattern.pipe
+import com.typesafe.scalalogging.LazyLogging
 import uk.co.kenfos.crawler.actorsystem.CrawlerSystem.{CrawlRequest, CrawlResponse, GetState, Init}
 import uk.co.kenfos.crawler.domain.SiteGraph
 import uk.co.kenfos.crawler.service.Crawler
 
 import scala.concurrent.duration._
 
-class CrawlerSystem(crawler: Crawler) extends Actor {
+class CrawlerSystem(crawler: Crawler) extends Actor with LazyLogging {
 
   import context.dispatcher
 
@@ -21,7 +22,7 @@ class CrawlerSystem(crawler: Crawler) extends Actor {
     case CrawlRequest(url)         => triggerCrawlRequest(url, siteGraph)
     case CrawlResponse(url, links) => processCrawlResponse(url, links, siteGraph)
     case GetState                  => sender() ! siteGraph
-    case ReceiveTimeout            => context.system.terminate()
+    case ReceiveTimeout            => crawler.terminate; context.system.terminate()
   }
 
   private def init(domain: String): Unit = {
