@@ -16,7 +16,7 @@ class SiteGraphSpec extends WordSpec with Matchers {
       siteGraph.contains(nonExistingUrl) shouldBe false
     }
 
-    "return true when url exists in a root node of the url graph" in {
+    "return true when url exists in as a referenced link in the url graph" in {
       val siteGraph = SiteGraph(url, Map(aboutUrl -> Set()))
       siteGraph.contains(aboutUrl) shouldBe true
       siteGraph.contains(nonExistingUrl) shouldBe false
@@ -28,7 +28,7 @@ class SiteGraphSpec extends WordSpec with Matchers {
       siteGraph.contains(nonExistingUrl) shouldBe false
     }
 
-    "return a new site graph when a new node is added" in {
+    "return a new site graph when a new url is added" in {
       val siteGraph = SiteGraph(url)
       val newSiteGraph = siteGraph.add(aboutUrl, Set())
       newSiteGraph shouldBe SiteGraph(url, Map(aboutUrl -> Set()))
