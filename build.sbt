@@ -1,6 +1,6 @@
 scalaVersion := "2.12.6"
 
-name := "kenfos"
+name := "crawler"
 organization := "uk.co.kenfos"
 version := "1.0"
 
@@ -15,3 +15,11 @@ libraryDependencies += "org.jsoup" % "jsoup" % "1.11.3"
 libraryDependencies += "com.typesafe.akka" %% "akka-testkit" % "2.5.12" % Test
 libraryDependencies += "org.scalamock" %% "scalamock" % "4.1.0" % Test
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.5" % Test
+
+assemblyJarName in assembly := "crawler.jar"
+
+assemblyMergeStrategy in assembly := {
+  case file if file.toLowerCase.endsWith("manifest.mf")         => MergeStrategy.discard
+  case file if file.toLowerCase.endsWith("versions.properties") => MergeStrategy.discard
+  case file                                                     => (assemblyMergeStrategy in assembly).value(file)
+}
