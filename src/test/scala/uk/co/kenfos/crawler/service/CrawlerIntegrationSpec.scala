@@ -38,5 +38,16 @@ class CrawlerIntegrationSpec extends AsyncWordSpec with Matchers with BeforeAndA
       scraper.getLinks _ expects * returning links
       crawler.crawl(url).map(response => response shouldBe expectedLinks)
     }
+
+    "handle redirects" in {
+      val url = Url("http://www.thoughtworks.com")
+      val links = Set("http://www.thoughtworks.com/about-us")
+      val expectedLinks = Set(Url("http://www.thoughtworks.com/about-us"))
+      val scraper = mock[Scraper]
+      val urlBuilder = DefaultUrlBuilder
+      val crawler = new HTTPCrawler(scraper, urlBuilder)
+      scraper.getLinks _ expects * returning links
+      crawler.crawl(url).map(response => response shouldBe expectedLinks)
+    }
   }
 }

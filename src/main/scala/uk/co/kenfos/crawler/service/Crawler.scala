@@ -2,6 +2,7 @@ package uk.co.kenfos.crawler.service
 
 import com.typesafe.scalalogging.LazyLogging
 import dispatch._
+import org.asynchttpclient.Response
 import uk.co.kenfos.crawler.domain.Url
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -15,15 +16,22 @@ trait Crawler {
 
 class HTTPCrawler(scraper: Scraper, urlBuilder: UrlBuilder) extends Crawler with LazyLogging {
 
+  private val httpClient = Http.default.closeAndConfigure(_ setFollowRedirect true)
+  private val HTTP_OK = 200
+
   override def crawl(domainUrl: Url, url: Url): Future[Set[Url]] = {
     val request = dispatch.url(url.value).GET
     logger.info(s"crawling ${url.value}")
-    Http.default(request).map(response => getLinks(domainUrl, response.getResponseBody))
+    httpClient(request).map(response => handleResponse(domainUrl, url, response))
   }
 
-  override def terminate(): Unit = Http.default.shutdown
+  override def terminate(): Unit = httpClient.shutdown
 
-  private def getLinks(domainUrl: Url, html: String): Set[Url] = {
+  private def handleResponse(domainUrl: Url, url: Url, response: Response): Set[Url] = {
+    if (HTTP_OK.equals(response.getStatusCode)) getLinks(domainUrl, url, response.getResponseBody) else Set()
+  }
+
+  private def getLinks(domainUrl: Url, url: Url, html: String): Set[Url] = {
     scraper.getLinks(html).flatMap(url => urlBuilder.build(domainUrl, url))
   }
 }

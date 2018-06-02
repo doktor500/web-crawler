@@ -23,12 +23,20 @@ class CrawlerSystem(crawler: Crawler) extends Actor with LazyLogging {
     case CrawlRequest(url)         => triggerCrawlRequest(url, siteGraph)
     case CrawlResponse(url, links) => processCrawlResponse(url, links, siteGraph)
     case GetState                  => sender() ! siteGraph
-    case ReceiveTimeout            => crawler.terminate(); context.system.terminate()
+    case ReceiveTimeout            => shutdown(siteGraph)
   }
 
   private def init(domain: Url): Unit = {
+    logger.info("Intialising actor system")
     context.become(active(SiteGraph(domain)))
     self ! CrawlRequest(domain)
+  }
+
+  private def shutdown(siteGraph: SiteGraph): Unit = {
+    logger.info(s"Number of pages processed: ${siteGraph.urls.keySet.size}")
+    logger.info("Terminating actor system")
+    crawler.terminate()
+    context.system.terminate()
   }
 
   private def triggerCrawlRequest(url: Url, siteGraph: SiteGraph): Unit = {
