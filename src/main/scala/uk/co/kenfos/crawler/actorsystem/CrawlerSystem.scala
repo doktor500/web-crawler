@@ -14,7 +14,7 @@ class CrawlerSystem(crawler: Crawler) extends Actor with LazyLogging {
 
   import context.dispatcher
 
-  context.setReceiveTimeout(1 seconds)
+  context.setReceiveTimeout(2 seconds)
 
   def receive: Receive = active(SiteGraph())
 
@@ -27,7 +27,7 @@ class CrawlerSystem(crawler: Crawler) extends Actor with LazyLogging {
   }
 
   private def init(domain: Url): Unit = {
-    logger.info("Intialising actor system")
+    logger.info("Initialising actor system")
     context.become(active(SiteGraph(domain)))
     self ! CrawlRequest(domain)
   }
