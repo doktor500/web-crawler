@@ -9,7 +9,7 @@ import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 import uk.co.kenfos.crawler.actorsystem.CrawlerSystem.{GetState, Init}
 import uk.co.kenfos.crawler.actorsystem.domain.SiteGraph
 import uk.co.kenfos.crawler.domain.Url
-import uk.co.kenfos.crawler.service.Crawler
+import uk.co.kenfos.crawler.web.{Crawler, JsonSerializer}
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -32,7 +32,7 @@ class CrawlerSystemSpec extends TestKit(ActorSystem("CrawlerSystem"))
       val aboutUrl = Url("http://www.kenfos.co.uk/contact")
       val distinctHostUrl = Url("http://google.com")
       val siteMap = Map(domainUrl -> Set(aboutUrl), aboutUrl -> Set[Url](), distinctHostUrl -> Set[Url]())
-      val crawlerSystem = TestActorRef.apply(new CrawlerSystem(new FakeCrawler(siteMap)))
+      val crawlerSystem = TestActorRef.apply(new CrawlerSystem(new FakeCrawler(siteMap), JsonSerializer))
 
       crawlerSystem ! Init(domainUrl.value)
 

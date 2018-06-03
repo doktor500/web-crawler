@@ -1,4 +1,4 @@
-package uk.co.kenfos.crawler.service
+package uk.co.kenfos.crawler.web
 
 import org.apache.commons.validator.routines.UrlValidator
 import uk.co.kenfos.crawler.domain.Url
@@ -14,7 +14,7 @@ object DefaultUrlBuilder extends UrlBuilder {
   def build(domainUrl: Url, link: String): Option[Url] = {
     if (link.contains("http")) toValidUrl(link)
     else if (link.contains(":") || link.contains("#")) None
-    else toValidUrl(s"${domainUrl.value}$link")
+    else toValidUrl(s"${domainUrl}$link")
   }
 
   private def toValidUrl(url: String): Option[Url] = {

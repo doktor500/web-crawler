@@ -1,4 +1,4 @@
-package uk.co.kenfos.crawler.service
+package uk.co.kenfos.crawler.web
 
 import com.typesafe.scalalogging.LazyLogging
 import dispatch._
@@ -21,7 +21,7 @@ class HTTPCrawler(scraper: Scraper, urlBuilder: UrlBuilder) extends Crawler with
 
   override def crawl(domainUrl: Url, url: Url): Future[Set[Url]] = {
     val request = dispatch.url(url.value).GET
-    logger.info(s"crawling ${url.value}")
+    logger.info(s"crawling ${url}")
     httpClient(request).map(response => handleResponse(domainUrl, url, response))
   }
 

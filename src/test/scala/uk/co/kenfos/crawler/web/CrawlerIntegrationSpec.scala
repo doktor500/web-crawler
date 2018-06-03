@@ -1,4 +1,4 @@
-package uk.co.kenfos.crawler.service
+package uk.co.kenfos.crawler.web
 
 import org.scalamock.scalatest.AsyncMockFactory
 import org.scalatest._

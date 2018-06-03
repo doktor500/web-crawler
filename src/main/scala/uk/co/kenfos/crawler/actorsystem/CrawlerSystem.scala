@@ -6,11 +6,11 @@ import com.typesafe.scalalogging.LazyLogging
 import uk.co.kenfos.crawler.actorsystem.CrawlerSystem.{CrawlRequest, CrawlResponse, GetState, Init}
 import uk.co.kenfos.crawler.actorsystem.domain.SiteGraph
 import uk.co.kenfos.crawler.domain.Url
-import uk.co.kenfos.crawler.service.Crawler
+import uk.co.kenfos.crawler.web.{Crawler, Serializer}
 
 import scala.concurrent.duration._
 
-class CrawlerSystem(crawler: Crawler) extends Actor with LazyLogging {
+class CrawlerSystem(crawler: Crawler, serializer: Serializer) extends Actor with LazyLogging {
 
   import context.dispatcher
 
@@ -33,10 +33,11 @@ class CrawlerSystem(crawler: Crawler) extends Actor with LazyLogging {
   }
 
   private def shutdown(siteGraph: SiteGraph): Unit = {
-    logger.info(s"Number of pages processed: ${siteGraph.urls.keySet.size}")
+    logger.info(s"Number of pages processed: ${siteGraph.graph.keySet.size}")
     logger.info("Terminating actor system")
     crawler.terminate()
     context.system.terminate()
+    serializer.serialize(siteGraph.graph)
   }
 
   private def triggerCrawlRequest(url: Url, siteGraph: SiteGraph): Unit = {
