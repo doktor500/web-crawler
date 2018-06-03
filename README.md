@@ -6,7 +6,7 @@
 
 ## Execute the project with sbt
 
-    sbt "run http://www.kenfos.co.uk"
+    sbt "run https://www.thoughtworks.com"
 
 ## Execute the tests with sbt
 
@@ -15,7 +15,7 @@
 ## Assemble the project and execute it
 
     sbt assemble
-    java -jar ./target/scala-2.12/crawler.jar http://www.kenfos.co.uk
+    java -jar ./target/scala-2.12/crawler.jar https://www.thoughtworks.com
 
 # Visualize the site map graph
 
@@ -23,6 +23,6 @@
 
 ### Assumptions
 
-- Url normalization has not been taken into account, that means urls such as `http://www.kenfos.co.uk`, `https://www.kenfos.co.uk`, `http://www.kenfos.co.uk:80` will be treated as different urls
+- Url normalization has not been taken into account, that means urls such as `http://www.thoughtworks.com`, `https://www.thoughtworks.com`, `https://www.thoughtworks.com:80` will be treated as different urls
 - It is OK to filter all the URLs that contain a '#' or ':'
 - Validation is not done for input parameters

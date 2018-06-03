@@ -25,8 +25,8 @@ class CrawlerSystemSpec extends TestKit(ActorSystem("CrawlerSystem"))
 
   "CrawlerSystem" should {
     "crawl a single domain" in {
-      val domainUrl = Url("http://www.kenfos.co.uk")
-      val aboutUrl = Url("http://www.kenfos.co.uk/contact")
+      val domainUrl = Url("https://www.thoughtworks.com")
+      val aboutUrl = Url("https://www.thoughtworks.com/contact-us")
       val distinctHostUrl = Url("http://google.com")
       val siteMap = Map(domainUrl -> Set(aboutUrl), aboutUrl -> Set[Url](), distinctHostUrl -> Set[Url]())
       val crawlerSystem = TestActorRef.apply(new CrawlerSystem(domainUrl, new FakeCrawler(siteMap), JsonSerializer))

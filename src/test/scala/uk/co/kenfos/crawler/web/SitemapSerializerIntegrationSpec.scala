@@ -8,11 +8,12 @@ import scala.io.Source
 class SitemapSerializerIntegrationSpec extends WordSpec with Matchers {
   "Sitemap serializer" should {
     "create the graph JSON file" in {
-      val siteGraph = Map(Url("http://www.kenfos.co.uk") -> Set(Url("http://www.kenfos.co.uk/about")))
+      val siteGraph = Map(Url("https://www.thoughtworks.com") -> Set(Url("https://www.thoughtworks.com/about-us")))
 
       JsonSerializer.serialize(siteGraph)
       val content = Source.fromFile("output.json").getLines.mkString
-      content shouldBe """{  "http://www.kenfos.co.uk" : [ {    "value" : "http://www.kenfos.co.uk/about"  } ]}"""
+      content shouldBe
+        """{  "https://www.thoughtworks.com" : [ {    "value" : "https://www.thoughtworks.com/about-us"  } ]}"""
     }
   }
 }
