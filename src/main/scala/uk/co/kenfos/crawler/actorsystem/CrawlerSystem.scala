@@ -46,10 +46,10 @@ class CrawlerSystem(domainUrl: Url, crawler: Crawler, siteMapSerializer: Seriali
   }
 
   private def processCrawlResponse(url: Url, newLinks: Set[Url], state: State): Unit = {
-    val newLinksToBeCrawl = newLinks.filter(link => link.hasSameHostAs(url) && !state.crawledUrls.contains(link))
-    val linksPendingToBeCrawled = state.toBeCrawled + newLinksToBeCrawl.size - 1
-    context.become(active(state.withNewSiteMap(url, newLinksToBeCrawl, linksPendingToBeCrawled)))
-    newLinksToBeCrawl.foreach(link => self ! CrawlRequest(link))
+    val newLinksToBeCrawled = newLinks.filter(link => link.hasSameHostAs(url) && !state.crawledUrls.contains(link))
+    val linksPendingToBeCrawled = state.toBeCrawled + newLinksToBeCrawled.size - 1
+    context.become(active(state.withNewSiteMap(url, newLinksToBeCrawled, linksPendingToBeCrawled)))
+    newLinksToBeCrawled.foreach(link => self ! CrawlRequest(link))
     if (linksPendingToBeCrawled == 0) self ! Shutdown
   }
 }
