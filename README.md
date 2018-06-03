@@ -19,7 +19,10 @@
 
 # Visualize the site map graph
 
-    Execute the app and then run `npm install -g local-server && ws`, then navigate to `http://localhost:8000` 
+    Execute the project.
+    Install local-server with `npm install -g local-server`. 
+    Run local server with `ws`, 
+    Navigate to `http://localhost:8000` 
 
 ### Assumptions
 
