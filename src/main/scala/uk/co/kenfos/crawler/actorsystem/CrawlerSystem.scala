@@ -32,6 +32,7 @@ class CrawlerSystem(domainUrl: Url, crawler: Crawler, siteMapSerializer: Seriali
   private def shutdown(state: State): Unit = {
     logger.info(s"Number of URLs processed: ${state.crawledUrls.size}")
     logger.info("Terminating actor system")
+    siteMapSerializer.serialize(state.siteMap)
     crawler.terminate()
     context.system.terminate()
   }
