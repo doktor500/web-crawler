@@ -9,7 +9,8 @@ object Main extends App {
 
   val domainUrl = args(0)
   val system = ActorSystem("CrawlerSystem")
-  val crawler = system.actorOf(Props(new CrawlerSystem(new HTTPCrawler(HTMLScraper, DefaultUrlBuilder), JsonSerializer)))
+  val httpCrawler = new HTTPCrawler(HTMLScraper, DefaultUrlBuilder)
+  val crawler = system.actorOf(Props(new CrawlerSystem(httpCrawler, JsonSerializer)))
 
   crawler ! Init(domainUrl)
 }
