@@ -9,9 +9,9 @@ import scala.concurrent.Future
 class CrawlerIntegrationSpec extends AsyncWordSpec with Matchers with BeforeAndAfterEach with AsyncMockFactory {
   "Crawler" should {
     "make HTTP request and call scraper" in {
-      val url = Url("http://www.kenfos.co.uk")
-      val links = Set("http://www.kenfos.co.uk/about", "http://www.kenfos.co.uk/contact")
-      val expectedLinks = Set(Url("http://www.kenfos.co.uk/about"), Url("http://www.kenfos.co.uk/contact"))
+      val url = Url("https://www.thoughtworks.com")
+      val links = Set("https://www.thoughtworks.com/about-us")
+      val expectedLinks = Set(Url("https://www.thoughtworks.com/about-us"))
       val scraper = mock[Scraper]
       val urlBuilder = DefaultUrlBuilder
       val crawler = new HTTPCrawler(scraper, urlBuilder)
@@ -20,9 +20,9 @@ class CrawlerIntegrationSpec extends AsyncWordSpec with Matchers with BeforeAndA
     }
 
     "include root domain in relative links" in {
-      val url = Url("http://www.kenfos.co.uk")
-      val links = Set("http://www.kenfos.co.uk/about", "/contact")
-      val expectedLinks = Set(Url("http://www.kenfos.co.uk/about"), Url("http://www.kenfos.co.uk/contact"))
+      val url = Url("https://www.thoughtworks.com")
+      val links = Set("/contact-us")
+      val expectedLinks = Set(Url("https://www.thoughtworks.com/contact-us"))
       val scraper = mock[Scraper]
       val urlBuilder = DefaultUrlBuilder
       val crawler = new HTTPCrawler(scraper, urlBuilder)
@@ -31,9 +31,9 @@ class CrawlerIntegrationSpec extends AsyncWordSpec with Matchers with BeforeAndA
     }
 
     "filter out non web links" in {
-      val url = Url("http://www.kenfos.co.uk")
-      val links = Set("http://www.kenfos.co.uk/about", "mailto:davidmolinero.com@gmail.com")
-      val expectedLinks = Set(Url("http://www.kenfos.co.uk/about"))
+      val url = Url("https://www.thoughtworks.com")
+      val links = Set("https://www.thoughtworks.com/about-us", "mailto:davidmolinero.com@gmail.com")
+      val expectedLinks = Set(Url("https://www.thoughtworks.com/about-us"))
       val scraper = mock[Scraper]
       val urlBuilder = DefaultUrlBuilder
       val crawler = new HTTPCrawler(scraper, urlBuilder)
@@ -42,9 +42,9 @@ class CrawlerIntegrationSpec extends AsyncWordSpec with Matchers with BeforeAndA
     }
 
     "handle redirects" in {
-      val url = Url("http://www.thoughtworks.com")
-      val links = Set("http://www.thoughtworks.com/about-us")
-      val expectedLinks = Set(Url("http://www.thoughtworks.com/about-us"))
+      val url = Url("https://www.thoughtworks.com")
+      val links = Set("https://www.thoughtworks.com/about-us")
+      val expectedLinks = Set(Url("https://www.thoughtworks.com/about-us"))
       val scraper = mock[Scraper]
       val urlBuilder = DefaultUrlBuilder
       val crawler = new HTTPCrawler(scraper, urlBuilder)

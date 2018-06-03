@@ -7,7 +7,6 @@ import akka.util.Timeout
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 import uk.co.kenfos.crawler.actorsystem.CrawlerSystem.{GetState, Init}
-import uk.co.kenfos.crawler.actorsystem.domain.SiteGraph
 import uk.co.kenfos.crawler.domain.Url
 import uk.co.kenfos.crawler.web.{Crawler, JsonSerializer}
 
@@ -22,9 +21,7 @@ class CrawlerSystemSpec extends TestKit(ActorSystem("CrawlerSystem"))
 
   implicit val timeout: Timeout = Timeout(1.seconds)
 
-  override def afterAll() = {
-    system.terminate
-  }
+  override def afterAll(): Unit = system.terminate
 
   "CrawlerSystem" should {
     "crawl a single domain" in {
@@ -32,16 +29,12 @@ class CrawlerSystemSpec extends TestKit(ActorSystem("CrawlerSystem"))
       val aboutUrl = Url("http://www.kenfos.co.uk/contact")
       val distinctHostUrl = Url("http://google.com")
       val siteMap = Map(domainUrl -> Set(aboutUrl), aboutUrl -> Set[Url](), distinctHostUrl -> Set[Url]())
-      val crawlerSystem = TestActorRef.apply(new CrawlerSystem(new FakeCrawler(siteMap), JsonSerializer))
+      val crawlerSystem = TestActorRef.apply(new CrawlerSystem(domainUrl, new FakeCrawler(siteMap), JsonSerializer))
 
-      crawlerSystem ! Init(domainUrl.value)
+      crawlerSystem ! Init
 
       val actorState = (crawlerSystem ? GetState).futureValue
-      actorState.leftSideValue shouldBe SiteGraph(
-        domainUrl,
-        Map(domainUrl -> Set(aboutUrl), aboutUrl -> Set[Url]()),
-        Set(domainUrl, aboutUrl)
-      )
+      actorState.leftSideValue shouldBe Set(domainUrl, aboutUrl)
     }
   }
 }

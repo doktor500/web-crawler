@@ -5,15 +5,13 @@ import uk.co.kenfos.crawler.domain.Url
 
 import scala.io.Source
 
-class SerializerIntegrationSpec extends WordSpec with Matchers {
-  "Serializer" should {
+class SitemapSerializerIntegrationSpec extends WordSpec with Matchers {
+  "Sitemap serializer" should {
     "create the graph JSON file" in {
-      val siteGraph = Map(
-        Url("http://www.kenfos.co.uk") -> Set(Url("http://www.kenfos.co.uk/about"))
-      )
+      val siteGraph = Map(Url("http://www.kenfos.co.uk") -> Set(Url("http://www.kenfos.co.uk/about")))
 
       JsonSerializer.serialize(siteGraph)
-      val content = Source.fromFile("graph.json").getLines.mkString
+      val content = Source.fromFile("output.json").getLines.mkString
       content shouldBe """{  "http://www.kenfos.co.uk" : [ {    "value" : "http://www.kenfos.co.uk/about"  } ]}"""
     }
   }

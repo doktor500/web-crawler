@@ -1,72 +1,62 @@
 package uk.co.kenfos.crawler.actorsystem
 
-import akka.actor.{Actor, ReceiveTimeout}
-import akka.pattern.pipe
+import akka.actor.Actor
 import com.typesafe.scalalogging.LazyLogging
 import uk.co.kenfos.crawler.actorsystem.CrawlerSystem._
-import uk.co.kenfos.crawler.actorsystem.domain.SiteGraph
 import uk.co.kenfos.crawler.domain.Url
 import uk.co.kenfos.crawler.web.{Crawler, Serializer}
 
-import scala.concurrent.duration._
+import scala.util.{Failure, Success}
 
-class CrawlerSystem(crawler: Crawler, serializer: Serializer) extends Actor with LazyLogging {
-
+class CrawlerSystem(domainUrl: Url, crawler: Crawler, siteMapSerializer: Serializer) extends Actor with LazyLogging {
   import context.dispatcher
 
-  context.setReceiveTimeout(60 seconds)
+  private val timeout = "timed out"
 
-  def receive: Receive = active(SiteGraph.empty, 0)
+  def receive: Receive = active(State.empty)
 
-  def active(siteGraph: SiteGraph, count: Int): Receive = {
-    case Init(domain)              => init(Url(domain))
-    case CrawlRequest(url)         => triggerCrawlRequest(url, siteGraph, count)
-    case CrawlResponse(url, links) => processCrawlResponse(url, links, siteGraph, count)
-    case GetState                  => sender() ! siteGraph
-    case ReceiveTimeout            => handleTimeout(siteGraph)
-    case Shutdown                  => shutdown(siteGraph)
+  def active(state: State): Receive = {
+    case Init                         => init()
+    case CrawlRequest(url)            => triggerCrawlRequest(url, state)
+    case CrawlResponse(url, newLinks) => processCrawlResponse(url, newLinks, state)
+    case GetState                     => sender() ! state.crawledUrls
+    case Shutdown                     => shutdown(state)
   }
 
-  private def init(domain: Url): Unit = {
-    logger.info("Initialising actor system")
-    context.become(active(SiteGraph.init(domain), 1))
-    self ! CrawlRequest(domain)
+  private def init(): Unit = {
+    logger.info("Actor system initiated")
+    context.become(active(State.initial))
+    self ! CrawlRequest(domainUrl)
   }
 
-  private def handleTimeout(siteGraph: SiteGraph): Unit = {
-    logger.warn("Terminating due to timeout")
-    shutdown(siteGraph)
-  }
-
-  private def shutdown(siteGraph: SiteGraph): Unit = {
-    logger.info(s"Number of pages processed: ${siteGraph.graph.keySet.size}")
+  private def shutdown(state: State): Unit = {
+    logger.info(s"Number of URLs processed: ${state.crawledUrls.size}")
     logger.info("Terminating actor system")
-    serializer.serialize(siteGraph.graph)
     crawler.terminate()
     context.system.terminate()
   }
 
-  private def triggerCrawlRequest(url: Url, siteGraph: SiteGraph, count: Int): Unit = {
-    context.become(active(siteGraph.add(url, Set()), count))
-    crawler.crawl(siteGraph.domainUrl, url)
-      .map(urls => CrawlResponse(url, urls))
-      .pipeTo(self)(sender())
+  private def triggerCrawlRequest(url: Url, state: State): Unit = {
+    context.become(active(state.withNewCrawled(url)))
+    crawler.crawl(domainUrl, url).onComplete {
+      case Success(links) => self ! CrawlResponse(url, links)
+      case Failure(e)     => if (e.getMessage.contains(timeout)) self ! CrawlRequest(url) else self ! CrawlResponse(url)
+    }
   }
 
-  private def processCrawlResponse(url: Url, links: Set[Url], siteGraph: SiteGraph, count: Int): Unit = {
-    val newLinks = links.filter(link => link.hasSameHostAs(url) && !siteGraph.contains(link))
-    val newGraph = siteGraph.add(url, newLinks)
-    val linksPendingToBeProcessed = count + newLinks.size - 1
-    context.become(active(newGraph, linksPendingToBeProcessed))
-    newLinks.foreach(link => self ! CrawlRequest(link))
-    if (linksPendingToBeProcessed == 0) self ! Shutdown
+  private def processCrawlResponse(url: Url, newLinks: Set[Url], state: State): Unit = {
+    val newLinksToBeCrawl = newLinks.filter(link => link.hasSameHostAs(url) && !state.crawledUrls.contains(link))
+    val linksPendingToBeCrawled = state.toBeCrawled + newLinksToBeCrawl.size - 1
+    context.become(active(state.withNewSiteMap(url, newLinksToBeCrawl, linksPendingToBeCrawled)))
+    newLinksToBeCrawl.foreach(link => self ! CrawlRequest(link))
+    if (linksPendingToBeCrawled == 0) self ! Shutdown
   }
 }
 
 object CrawlerSystem {
+  case object Init
   case object GetState
-  case class Init(domain: String)
   case class CrawlRequest(url: Url)
-  case class CrawlResponse(url: Url, links: Set[Url])
+  case class CrawlResponse(url: Url, links: Set[Url] = Set())
   case object Shutdown
 }

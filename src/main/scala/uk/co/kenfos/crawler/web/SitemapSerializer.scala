@@ -12,7 +12,7 @@ trait Serializer {
 
 object JsonSerializer extends Serializer {
 
-  private val fileName = "graph.json"
+  private val fileName = "output.json"
 
   def serialize(content: Any): Unit = {
     val objectMapper = new ObjectMapper() with ScalaObjectMapper

@@ -5,7 +5,6 @@ import dispatch._
 import org.asynchttpclient.Response
 import uk.co.kenfos.crawler.domain.Url
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 trait Crawler {
@@ -15,13 +14,14 @@ trait Crawler {
 }
 
 class HTTPCrawler(scraper: Scraper, urlBuilder: UrlBuilder) extends Crawler with LazyLogging {
+  import scala.concurrent.ExecutionContext.Implicits.global
 
   private val httpClient = Http.default.closeAndConfigure(_ setFollowRedirect true)
   private val HTTP_OK = 200
 
   override def crawl(domainUrl: Url, url: Url): Future[Set[Url]] = {
     val request = dispatch.url(url.value).GET
-    logger.info(s"crawling ${url}")
+    logger.info(s"crawling $url")
     httpClient(request).flatMap(response => handleResponse(domainUrl, url, response))
   }
 
