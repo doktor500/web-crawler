@@ -39,7 +39,8 @@ class CrawlerSystemSpec extends TestKit(ActorSystem("CrawlerSystem"))
       val actorState = (crawlerSystem ? GetState).futureValue
       actorState.leftSideValue shouldBe SiteGraph(
         domainUrl,
-        Map(domainUrl -> Set(aboutUrl), aboutUrl -> Set())
+        Map(domainUrl -> Set(aboutUrl), aboutUrl -> Set[Url]()),
+        Set(domainUrl, aboutUrl)
       )
     }
   }

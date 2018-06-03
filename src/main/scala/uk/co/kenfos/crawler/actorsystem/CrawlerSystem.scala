@@ -16,7 +16,7 @@ class CrawlerSystem(crawler: Crawler, serializer: Serializer) extends Actor with
 
   context.setReceiveTimeout(2 seconds)
 
-  def receive: Receive = active(SiteGraph())
+  def receive: Receive = active(SiteGraph.empty)
 
   def active(siteGraph: SiteGraph): Receive = {
     case Init(domain)              => init(Url(domain))
@@ -28,7 +28,7 @@ class CrawlerSystem(crawler: Crawler, serializer: Serializer) extends Actor with
 
   private def init(domain: Url): Unit = {
     logger.info("Initialising actor system")
-    context.become(active(SiteGraph(domain)))
+    context.become(active(SiteGraph.init(domain)))
     self ! CrawlRequest(domain)
   }
 
