@@ -1,8 +1,12 @@
+## Problem
+
+Build a web crawler that generates a site map
+
 ## Dependencies
 
-  Java 8
-  sbt
-  npm
+- Java 8
+- sbt
+- npm
 
 ## Execute the project with sbt
 
@@ -19,10 +23,14 @@
 
 # Visualize the site map graph
 
-    Execute the project.
-    Install local-server with `npm install -g local-server`. 
-    Run local server with `ws`, 
-    Navigate to `http://localhost:8000` 
+- Execute the project.
+- Install local-server with `npm install -g local-server`. 
+- Run local server with `ws`, 
+- Navigate to `http://localhost:8000` 
+    
+### Approached followed
+
+To deal with the concurrency nature of the problem, the crawler has been implemented using a functional programming style and an approach based on an actor system implemented with Akka. 
 
 ### Assumptions
 
