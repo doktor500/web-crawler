@@ -4,6 +4,8 @@ import org.scalamock.scalatest.AsyncMockFactory
 import org.scalatest._
 import uk.co.kenfos.crawler.domain.Url
 
+import scala.concurrent.Future
+
 class CrawlerIntegrationSpec extends AsyncWordSpec with Matchers with BeforeAndAfterEach with AsyncMockFactory {
   "Crawler" should {
     "make HTTP request and call scraper" in {
@@ -13,7 +15,7 @@ class CrawlerIntegrationSpec extends AsyncWordSpec with Matchers with BeforeAndA
       val scraper = mock[Scraper]
       val urlBuilder = DefaultUrlBuilder
       val crawler = new HTTPCrawler(scraper, urlBuilder)
-      scraper.getLinks _ expects * returning links
+      scraper.getLinks _ expects * returning Future { links }
       crawler.crawl(url).map(response => response shouldBe expectedLinks)
     }
 
@@ -24,7 +26,7 @@ class CrawlerIntegrationSpec extends AsyncWordSpec with Matchers with BeforeAndA
       val scraper = mock[Scraper]
       val urlBuilder = DefaultUrlBuilder
       val crawler = new HTTPCrawler(scraper, urlBuilder)
-      scraper.getLinks _ expects * returning links
+      scraper.getLinks _ expects * returning Future { links }
       crawler.crawl(url).map(response => response shouldBe expectedLinks)
     }
 
@@ -35,7 +37,7 @@ class CrawlerIntegrationSpec extends AsyncWordSpec with Matchers with BeforeAndA
       val scraper = mock[Scraper]
       val urlBuilder = DefaultUrlBuilder
       val crawler = new HTTPCrawler(scraper, urlBuilder)
-      scraper.getLinks _ expects * returning links
+      scraper.getLinks _ expects * returning Future { links }
       crawler.crawl(url).map(response => response shouldBe expectedLinks)
     }
 
@@ -46,7 +48,7 @@ class CrawlerIntegrationSpec extends AsyncWordSpec with Matchers with BeforeAndA
       val scraper = mock[Scraper]
       val urlBuilder = DefaultUrlBuilder
       val crawler = new HTTPCrawler(scraper, urlBuilder)
-      scraper.getLinks _ expects * returning links
+      scraper.getLinks _ expects * returning Future { links }
       crawler.crawl(url).map(response => response shouldBe expectedLinks)
     }
   }

@@ -1,8 +1,8 @@
 package uk.co.kenfos.crawler.web
 
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.{AsyncWordSpec, Matchers}
 
-class ScraperSpec extends WordSpec with Matchers {
+class ScraperSpec extends AsyncWordSpec with Matchers {
   "Scraper" should {
     "return the links in an HTML document" in {
       val link1 = "http://kenfos.co.uk"
@@ -14,7 +14,7 @@ class ScraperSpec extends WordSpec with Matchers {
            |<a href="$link2"></a>
            |</body>
            |</html>""".stripMargin
-      ) shouldBe Set(link1, link2)
+      ).map(response => response shouldBe Set(link1, link2))
     }
   }
 }

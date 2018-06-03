@@ -22,16 +22,16 @@ class HTTPCrawler(scraper: Scraper, urlBuilder: UrlBuilder) extends Crawler with
   override def crawl(domainUrl: Url, url: Url): Future[Set[Url]] = {
     val request = dispatch.url(url.value).GET
     logger.info(s"crawling ${url}")
-    httpClient(request).map(response => handleResponse(domainUrl, url, response))
+    httpClient(request).flatMap(response => handleResponse(domainUrl, url, response))
   }
 
   override def terminate(): Unit = httpClient.shutdown
 
-  private def handleResponse(domainUrl: Url, url: Url, response: Response): Set[Url] = {
-    if (HTTP_OK.equals(response.getStatusCode)) getLinks(domainUrl, url, response.getResponseBody) else Set()
+  private def handleResponse(domainUrl: Url, url: Url, response: Response): Future[Set[Url]] = {
+    if (HTTP_OK.equals(response.getStatusCode)) getLinks(domainUrl, url, response.getResponseBody) else Future { Set() }
   }
 
-  private def getLinks(domainUrl: Url, url: Url, html: String): Set[Url] = {
-    scraper.getLinks(html).flatMap(url => urlBuilder.build(domainUrl, url))
+  private def getLinks(domainUrl: Url, url: Url, html: String): Future[Set[Url]] = {
+    scraper.getLinks(html).map(urls => urls.flatMap(url => urlBuilder.build(domainUrl, url)))
   }
 }
